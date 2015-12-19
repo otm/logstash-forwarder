@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime/pprof"
 	"time"
-  "fmt"
 )
 
 var exitStat = struct {
@@ -27,11 +27,15 @@ var options = &struct {
 	useSyslog           bool
 	tailOnRotate        bool
 	quiet               bool
-  version bool
+	version             bool
 }{
 	spoolSize:           1024,
 	harvesterBufferSize: 16 << 10,
 	idleTimeout:         time.Second * 5,
+}
+
+type publisher interface {
+	Run(chan []*FileEvent, chan []*FileEvent)
 }
 
 func emitOptions() {
@@ -97,7 +101,7 @@ func main() {
 	flag.Parse()
 
 	if options.version {
-		fmt.Println(Version);
+		fmt.Println(Version)
 		return
 	}
 
@@ -205,7 +209,10 @@ func main() {
 	// Harvesters dump events into the spooler.
 	go Spool(event_chan, publisher_chan, options.spoolSize, options.idleTimeout)
 
-	go Publishv1(publisher_chan, registrar_chan, &config.Network)
+	// This way it's possible to add additional publishers for custom integrations
+	var publish publisher
+	publish = NewLumberjackPublisher(config.Network)
+	go publish.Run(publisher_chan, registrar_chan)
 
 	// registrar records last acknowledged positions in all files.
 	Registrar(persist, registrar_chan)

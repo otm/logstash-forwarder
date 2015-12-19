@@ -4,7 +4,7 @@
     # A list of downstream servers listening for our messages.
     # logstash-forwarder will pick one at random and only switch if
     # the selected one appears to be dead or unresponsive
-    #"servers": [ "localhost:5043" ],
+    "servers": [ "localhost:5043" ],
 
     # The path to your client ssl certificate (optional)
     #"ssl certificate": "./logstash-forwarder.crt",
@@ -20,7 +20,7 @@
     # acknowledgement from the downstream server. If an timeout is reached,
     # logstash-forwarder will assume the connection or server is bad and
     # will connect to a server chosen at random from the servers list.
-    #"timeout": 15
+    "timeout": 15
   },
 
   # The list of files configurations
@@ -38,11 +38,13 @@
 
       # A dictionary of fields to annotate on each event.
       #"fields": { "type": "syslog" }
-    #}, {
+    #},
+ {
       # A path of "-" means stdin.
-      #"paths": [ "-" ],
-      #"fields": { "type": "stdin" }
-    #}, {
+      "paths": [ "-" ],
+      "fields": { "type": "stdin" }
+    }
+	#, {
       #"paths": [
         #"/var/log/apache/httpd-*.log"
       #],
